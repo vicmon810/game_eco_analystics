@@ -5,14 +5,14 @@ WITH stage_stats AS (
         COUNT(DISTINCT player_id) AS unique_players,
         SUM(
             CASE
-                WHERE battle_result = 'win'
+                WHEN battle_result = 'win'
                 THEN 1
                 ELSE 0
             END
         ) AS total_wins,
         SUM(
             CASE 
-                WHERE battle_result = 'loss'
+                WHEN battle_result = 'loss'
                 THEN 1
                 ELSE 0
             END

@@ -1,11 +1,12 @@
 import sqlite3
 from pathlib import Path 
-
+from dotenv import load_dotenv
 import pandas as pd 
+import os 
+load_dotenv()
 
-DATA_PATH = Path("data/player_events.csv")
-DB_PATH = Path("data/game_analytics.db")
-
+DATA_PATH = Path(os.getenv("DATA_PATH"))
+DB_PATH = Path(os.getenv("DB_PATH"))
 def main():
     df = pd.read_csv(DATA_PATH)
 
