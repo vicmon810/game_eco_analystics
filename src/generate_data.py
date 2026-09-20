@@ -10,21 +10,26 @@ MAX_DAYS = 7
 rows = []
 
 start_date = pd.Timestamp("2026-01-01")
-
+event_counter={}
 
 def add_event(
     player_id,
     day,
     event_name,
     stage=None,
+    battle_result=None,
     gold_change=0,
     purchase_value=0,
 ):
+    key = (player_id, day)
+    event_number = event_counter.get(key,0)
+    event_counter[key] = event_number + 1
     event_time = (
-        start_date
-        + pd.Timedelta(days=int(day))
-        + pd.Timedelta(minutes=np.random.randint(0, 1440))
-    )
+    start_date
+    + pd.Timedelta(days=int(day))
+    + pd.Timedelta(hours=9)
+    + pd.Timedelta(minutes=event_number)
+    )   
 
     rows.append(
         {
@@ -33,6 +38,7 @@ def add_event(
             "day": day,
             "event_name": event_name,
             "stage": stage,
+            "battle_result": battle_result,
             "gold_change": gold_change,
             "purchase_value": purchase_value,
         }
@@ -42,6 +48,7 @@ def add_event(
 for player_id in range(1, N_PLAYERS + 1):
 
     # Every player installs / starts the game
+    gold_balance = 0
     add_event(player_id, 0, "game_start")
 
     # -------------------------
@@ -71,11 +78,14 @@ for player_id in range(1, N_PLAYERS + 1):
         0,
         "battle_complete",
         stage=1,
+        battle_result=(
+            "win" if won_first_battle else "loss"
+        )
     )
 
     if not won_first_battle:
         continue
-
+    gold_balance +=120
     # Battle reward
     add_event(
         player_id,
@@ -101,9 +111,10 @@ for player_id in range(1, N_PLAYERS + 1):
     # Hero upgrade
     # -------------------------
 
-    upgraded = recruited and np.random.rand() < 0.72
+    upgraded = recruited and np.random.rand() < 0.72 and gold_balance >=100
 
     if upgraded:
+        gold_balance -= 100
         add_event(
             player_id,
             0,
@@ -120,12 +131,12 @@ for player_id in range(1, N_PLAYERS + 1):
 
     base_return_prob = 0.42
 
-    active = True
+    # active = True
 
     for day in range(1, MAX_DAYS + 1):
 
-        if not active:
-            break
+        # if not active:
+            # break
 
         return_prob = (
             base_return_prob
@@ -134,11 +145,12 @@ for player_id in range(1, N_PLAYERS + 1):
         )
 
         if np.random.rand() > return_prob:
-            active = False
-            break
+            continue
+            # active = False
+            # break
 
         add_event(player_id, day, "session_start")
-
+        gold_balance +=50 
         # Daily reward
         add_event(
             player_id,
@@ -170,9 +182,11 @@ for player_id in range(1, N_PLAYERS + 1):
                 day,
                 "battle_complete",
                 stage=stage,
+                battle_result ="win" if won else "loss",
             )
 
             if won:
+                gold_balance += 40 
                 add_event(
                     player_id,
                     day,
@@ -181,7 +195,8 @@ for player_id in range(1, N_PLAYERS + 1):
                 )
 
         # Some players upgrade again
-        if np.random.rand() < 0.35:
+        if np.random.rand() < 0.35 and gold_balance >= 80:
+            gold_balance -=80
             add_event(
                 player_id,
                 day,
