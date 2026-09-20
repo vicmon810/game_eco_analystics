@@ -1,6 +1,7 @@
 WITH daily_economy AS (
         SELECT 
             day, 
+            COUNT(DISTINCT player_id) AS active_players,
             SUM (
                 CASE
                     WHEN  gold_change > 0 
@@ -21,6 +22,7 @@ WITH daily_economy AS (
     )
     SELECT
         day,
+        active_players,
         gold_earned,
         gold_spent,
         gold_earned - gold_spent AS net_gold_change,
